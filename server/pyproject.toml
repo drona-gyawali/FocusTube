@@ -1,0 +1,15 @@
+[project]
+name = "FocusTube"
+version = "0.1.0"
+description = "FocusTube is an app designed to help you watch a YouTube video without any distractions."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.16.4",
+    "asyncpg>=0.30.0",
+    "dotenv>=0.9.9",
+    "fastapi>=0.116.1",
+    "psycopg2-binary>=2.9.10",
+    "sqlalchemy>=2.0.42",
+    "uvicorn>=0.35.0",
+]

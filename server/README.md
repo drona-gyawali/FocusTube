@@ -1,0 +1,1 @@
+To start the app cd server -> uvicorn app.config:app
