@@ -6,7 +6,8 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from alembic import context
 
 from app.config import database
-from app.models import user_model
+from app.models import models
+from app.authentication import models
 
 config = context.config
 

@@ -1,3 +1,3 @@
-from .info import router as info_router
+from .user_auth import router as user_auth
 
-routers = [info_router]
+routers = [user_auth]

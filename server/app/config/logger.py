@@ -28,6 +28,20 @@ logger.propagate = False
 
 
 def get_logger(name: str):
+    """
+    Returns a logger instance with the specified name.
+
+    This function ensures that each logger is configured with the same
+    rotating file handler and formatter defined above. If the logger
+    does not already have handlers, it attaches the shared file handler.
+    This helps to keep log formatting and output consistent across modules.
+ 
+    Args:
+        name (str): The name of the logger, typically __name__ of the module.
+
+    Returns:
+        logging.Logger: Configured logger instance.
+    """
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
     if not logger.handlers:
