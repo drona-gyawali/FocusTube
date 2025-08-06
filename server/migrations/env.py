@@ -1,13 +1,12 @@
 import asyncio
 from logging.config import fileConfig
 
-from sqlalchemy import pool
-from sqlalchemy.ext.asyncio import create_async_engine
 from alembic import context
-
+from app.authentication import models
 from app.config import database
 from app.models import models
-from app.authentication import models
+from sqlalchemy import pool
+from sqlalchemy.ext.asyncio import create_async_engine
 
 config = context.config
 
@@ -16,6 +15,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 target_metadata = database.Base.metadata
+
 
 def get_url() -> str:
     return database.DB_URL

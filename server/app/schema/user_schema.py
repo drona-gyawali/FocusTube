@@ -1,15 +1,16 @@
-from pydantic import BaseModel, EmailStr, Field
-from typing import List, Optional
 from datetime import datetime
+from typing import List, Optional
+
+from pydantic import BaseModel, EmailStr, Field
 
 
 class ProfileResponse(BaseModel):
-    version:str
-    status:int
+    version: str
+    status: int
     id: int
     email: EmailStr
-    profile_img: str = Field(default='profile/something')
-    is_oauth: bool = Field(default=False) 
+    profile_img: str = Field(default="profile/something")
+    is_oauth: bool = Field(default=False)
     uploaded_links: List[str] = Field(default_factory=list)
     updated_at: datetime
     created_at: datetime
@@ -19,8 +20,8 @@ class ProfileResponse(BaseModel):
 
 
 class UserRegister(BaseModel):
-    email:EmailStr
-    password:str
+    email: EmailStr
+    password: str
 
 
 class Login(BaseModel):
@@ -38,8 +39,8 @@ class TokenData(BaseModel):
 
 
 class UploadProfile(BaseModel):
-    version:str
-    status:int
-    file_id:str
-    preview_url:str
-    message:str
+    version: str
+    status: int
+    file_id: str
+    preview_url: str
+    message: str

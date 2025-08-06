@@ -1,12 +1,11 @@
 from typing import Optional
 
+from app.authentication.jwt.token import verify_token
+from app.config.database import get_db
+from app.repository.user import UserRepository
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from app.authentication.jwt.token import verify_token
-from app.repository.user import UserRepository
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.config.database import get_db
-
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 

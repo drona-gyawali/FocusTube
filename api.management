@@ -1,0 +1,19 @@
+# Sample API structure
+
+POST backend/api/v1/upload_links/    
+POST backend/api/v1/upload_links/file 
+GET  backend/api/v1//videos                        # List all uploaded links
+GET  backend/api/v1/video/{id}                     # Return specific video (embed ready)
+POST backend/api/v1/playlist                       # Create a playlist
+GET  backend/api/v1/playlist/{id}                  # Get playlist with videos
+GET  backend/api/v1/video/download/{id}
+DELETE  backend/api/v1//video/{id}                 # Delete a video
+
+
+
+[User/auth/API]
+POST backend/api/v1/login
+POST backend/api/v1/register
+GET  backend/api/v1/me
+POST backend/api/v1/upload-profile-img
+DELETE backend/api/v1/delete-profile-img
