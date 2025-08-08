@@ -5,13 +5,24 @@ from pydantic import BaseModel, EmailStr, Field
 
 
 class ProfileResponse(BaseModel):
+    """
+    Response schema for user profile information.
+    """
+
     version: str
     status: int
     id: int
     email: EmailStr
-    profile_img: str = Field(default="profile/something")
-    is_oauth: bool = Field(default=False)
-    uploaded_links: List[str] = Field(default_factory=list)
+    profile_img: str = Field(
+        default="profile/something",
+        description="URL or path to the user's profile image",
+    )
+    is_oauth: bool = Field(
+        default=False, description="Indicates if the user registered via OAuth"
+    )
+    uploaded_links: List[str] = Field(
+        default_factory=list, description="List of uploaded link URLs"
+    )
     updated_at: datetime
     created_at: datetime
 
@@ -20,25 +31,45 @@ class ProfileResponse(BaseModel):
 
 
 class UserRegister(BaseModel):
+    """
+    Schema for user registration.
+    """
+
     email: EmailStr
     password: str
 
 
 class Login(BaseModel):
+    """
+    Schema for user login.
+    """
+
     name: str
     password: str
 
 
 class Token(BaseModel):
+    """
+    Schema for authentication token.
+    """
+
     access_token: str
     token_type: str
 
 
 class TokenData(BaseModel):
+    """
+    Schema for token data.
+    """
+
     user_id: Optional[int] = None
 
 
 class UploadProfile(BaseModel):
+    """
+    Response schema for profile upload.
+    """
+
     version: str
     status: int
     file_id: str

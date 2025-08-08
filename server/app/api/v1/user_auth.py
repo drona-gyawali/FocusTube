@@ -6,15 +6,13 @@ import uuid
 from app.authentication.jwt.oauth2 import get_current_user
 from app.authentication.jwt.token import create_access_token
 from app.authentication.models import User
+from app.config import get_db, get_logger
 from app.config.appwrite_client import AppwriteClient
-from app.config.database import get_db
-from app.config.logger import get_logger
-from app.repository.user import UserRepository
-from app.schema.user_schema import ProfileResponse, Token, UploadProfile, UserRegister
+from app.repository import UserRepository
+from app.schema import ProfileResponse, Token, UploadProfile, UserRegister
 from appwrite.exception import AppwriteException
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = get_logger("[api/v1/user_auth]")
@@ -85,7 +83,7 @@ async def me(
 ):
     repo = UserRepository(db)
     user = await repo.profile_details(current_user.id)
-
+    all_links = [link.url for link in user.uploaded_links]
     return {
         "version": "v1",
         "status": status.HTTP_200_OK,
@@ -93,7 +91,7 @@ async def me(
         "email": user.email,
         "profile_img": user.profile_img,
         "is_oauth": user.is_oauth,
-        "uploaded_links": user.uploaded_links,
+        "uploaded_links": all_links,
         "created_at": user.created_at,
         "updated_at": user.updated_at,
     }

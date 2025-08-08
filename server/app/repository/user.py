@@ -1,9 +1,9 @@
 import traceback
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List
 
-from app.authentication.models import User
-from app.config.logger import get_logger
+from app.authentication import User
+from app.config import get_logger
 from app.models.models import UploadedLinks
 from app.utils import helper
 from passlib.context import CryptContext

@@ -16,7 +16,7 @@ username=test@example.com&password=strongpassword123
 
 ### Get current user profile
 GET http://localhost:8000/backend/api/v1/me
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzU0NDk2NDUyfQ.-8W2wMWUE3C9m5LkNLGLHFxtVZW332vJJN7UyYXtjx0
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzU0NTgxMzIxfQ.ptLFzny8x4eBzai7pD-j9g99GhutoeIBYk4mP7uRK0U
 
 
 ### Upload Profile Image
@@ -36,3 +36,15 @@ Content-Type: image/jpeg
 ### Delete Profile Image
 DELETE http://localhost:8000/backend/api/v1/delete-profile-image/
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzU0NDk2NDUyfQ.-8W2wMWUE3C9m5LkNLGLHFxtVZW332vJJN7UyYXtjx0
+
+
+### Upload video links manually
+POST http://localhost:8000/backend/api/v1/video-links
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzU0NTgxMzIxfQ.ptLFzny8x4eBzai7pD-j9g99GhutoeIBYk4mP7uRK0U
+
+{
+  "links": [
+    "https://youtube.com/watch?v=abc123"
+  ]
+}

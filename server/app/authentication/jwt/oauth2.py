@@ -1,5 +1,3 @@
-from typing import Optional
-
 from app.authentication.jwt.token import verify_token
 from app.config.database import get_db
 from app.repository.user import UserRepository

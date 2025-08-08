@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta, timezone
 
 import jwt
-from app.config import conf
-from app.config.logger import get_logger
-from app.schema.user_schema import TokenData
+from app.config import conf, get_logger
+from app.schema import TokenData
 from fastapi import HTTPException, status
 from jwt.exceptions import InvalidTokenError
 
