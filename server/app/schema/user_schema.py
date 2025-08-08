@@ -20,8 +20,8 @@ class ProfileResponse(BaseModel):
     is_oauth: bool = Field(
         default=False, description="Indicates if the user registered via OAuth"
     )
-    uploaded_links: List[str] = Field(
-        default_factory=list, description="List of uploaded link URLs"
+    uploaded_links: int = Field(
+        default_factory=list, description="Count of uploaded link URLs"
     )
     updated_at: datetime
     created_at: datetime

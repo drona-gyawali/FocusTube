@@ -16,8 +16,7 @@ username=test@example.com&password=strongpassword123
 
 ### Get current user profile
 GET http://localhost:8000/backend/api/v1/me
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzU0NTgxMzIxfQ.ptLFzny8x4eBzai7pD-j9g99GhutoeIBYk4mP7uRK0U
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzU0NjgxMjcwfQ.Z5OkRrI5BOV_3jC6P6xdptr193J6U3ax5QYFVJfsKoY
 
 ### Upload Profile Image
 POST http://localhost:8000/backend/api/v1/upload-profile-image/
@@ -48,3 +47,18 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwI
     "https://youtube.com/watch?v=abc123"
   ]
 }
+
+### Upload links from the file
+POST http://localhost:8000/backend/api/v1/video-links/files
+Content-Type: multipart/form-data
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzU0Njc0MTUxfQ.DgEdmY1a0FXg3ZUa0Ewdih958PIRGbWXWEEgZG5VXFs
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="files"; filename="links.txt"
+Content-Type: text/plain
+
+
+### Get all links
+GET http://localhost:8000/backend/api/v1/videos
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzU0NjgwMzU5fQ.ICya9nqVtkMXHteY97cCu9mubhMrHsFrFy_w5qYXLBY

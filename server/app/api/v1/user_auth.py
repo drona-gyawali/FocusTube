@@ -91,7 +91,7 @@ async def me(
         "email": user.email,
         "profile_img": user.profile_img,
         "is_oauth": user.is_oauth,
-        "uploaded_links": all_links,
+        "uploaded_links": len(all_links),
         "created_at": user.created_at,
         "updated_at": user.updated_at,
     }

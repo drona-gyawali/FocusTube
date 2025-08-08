@@ -1,7 +1,11 @@
 import traceback
 
-from app.config.conf import (appwrite_apiKey, appwrite_bucketId,
-                             appwrite_endpoint, appwrite_projectId)
+from app.config.conf import (
+    appwrite_apiKey,
+    appwrite_bucketId,
+    appwrite_endpoint,
+    appwrite_projectId,
+)
 from app.config.logger import get_logger
 from appwrite.client import Client
 from appwrite.exception import AppwriteException
