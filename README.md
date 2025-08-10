@@ -3,7 +3,7 @@
 </div>
 
 
-# FocusTube Server
+# FocusTube Backend
 
 FocusTube is a productivity-focused YouTube wrapper that helps users stay focused by minimizing distractions. This repository contains the backend server for FocusTube, built with FastAPI.
 
