@@ -1,11 +1,12 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
+
+from sqlalchemy import delete, select
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_logger
 from app.models import UploadedLinks
-from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = get_logger("[app/repository/video_link]")
 
@@ -15,35 +16,54 @@ class VideoLinkRepository:
         self.db = db
 
     async def create_video_link(
-        self, user_id: int, links: Optional[List[str]], source: str
+        self,
+        user_id: int,
+        links: Optional[List[dict]],
+        source: str,
     ) -> List[UploadedLinks]:
+        """
+        Insert UploadedLinks rows. All metadata fields are optional.
+        Expect each entry in `links` to be a dict having at least 'url' and optionally many other keys.
+        """
+
         now = datetime.utcnow().replace(tzinfo=None)
-        created_links = []
+        created = []
         try:
-            for link in links:
-                new_link = UploadedLinks(
-                    url=link,
+            for data in links or []:
+                new = UploadedLinks(
+                    url=data.get("url"),
+                    video_id=data.get("video_id"),
+                    title=data.get("title"),
+                    description=data.get("description"),
+                    channel_title=data.get("channel_title"),
+                    thumbnail_url=data.get("thumbnail_url"),
+                    duration_seconds=data.get("duration_seconds"),
+                    view_count=data.get("view_count"),
+                    like_count=data.get("like_count"),
+                    comment_count=data.get("comment_count"),
+                    tags=data.get("tags"),
                     source=source,
                     user_id=user_id,
                     uploaded_at=now,
                 )
-                self.db.add(new_link)
-                created_links.append(new_link)
+                self.db.add(new)
+                created.append(new)
 
             await self.db.commit()
 
-            for link in created_links:
-                await self.db.refresh(link)
+            for item in created:
+                await self.db.refresh(item)
 
-            return created_links
+            return created
 
         except SQLAlchemyError as e:
             await self.db.rollback()
-            logger.error(f"DB Error on link creation: {e}")
+            logger.error("DB Error on link creation: %s", e)
             raise
 
         except Exception as e:
-            logger.error(f"Unexpected error on link creation: {e}")
+            await self.db.rollback()
+            logger.error("Unexpected DB error: %s", e)
             raise
 
     async def get_existing_links(
@@ -81,4 +101,27 @@ class VideoLinkRepository:
             return all_links
         except Exception as e:
             logger.error(f"DB Error: (get_all_links): {e}")
+            raise
+
+    async def delete_links(self, user_id: int, id: int) -> bool:
+        """
+        Delete the link with a specific ID belonging to the given user.
+        """
+        try:
+            link = await self.db.get(UploadedLinks, id)
+
+            if not link or link.user_id != user_id:
+                return False
+
+            await self.db.delete(link)
+            await self.db.commit()
+            return True
+
+        except SQLAlchemyError as e:
+            await self.db.rollback()
+            logger.error(f"DB Error: (delete_links): {e}")
+            raise
+        except Exception as e:
+            await self.db.rollback()
+            logger.error(f"Unexpected error in delete_links: {e}")
             raise

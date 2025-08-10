@@ -8,23 +8,63 @@ class VideoLinkRegister(BaseModel):
     A schema for a video link register
     """
 
-    links: List[str] = Field(None, description="A list of video links (URLs).")
+    links: List[str] = Field(..., description="A list of video links (URLs).")
+
+
+class VideoMetadata(BaseModel):
+    """
+    A schema for a video metadata
+    """
+
+    id: int = Field(None, description="The unique id of the video links.")
+    etag: Optional[str] = Field(
+        None, description="The ETag of the YouTube video metadata."
+    )
+    title: Optional[str] = Field(None, description="The title of the YouTube video.")
+    description: Optional[str] = Field(
+        None, description="The description of the YouTube video."
+    )
+    published_at: Optional[str] = Field(
+        None, description="Publish date of the video (ISO format)."
+    )
+    channel_title: Optional[str] = (
+        Field(None, description="The name of the channel publishing the video."),
+    )
+    thumbnail_url: Optional[str] = (
+        Field(None, description="The url of the video thumbnail."),
+    )
+    uploaded_at: Optional[str] = Field(
+        None, description="uploaded date by user in the system"
+    )
+    embedded_url: Optional[str] = Field(
+        None, description="The embed url to render in frontend (youtube embed)"
+    )
+
+
+class VideoLinkWithMetadata(BaseModel):
+    """
+    A schema with url and metadata
+    """
+
+    url: str = Field(..., description="The video link (URL).")
+    metadata: Optional[VideoMetadata] = Field(
+        None, description="Metadata for the video link."
+    )
 
 
 class VideoLinkResponse(BaseModel):
     """
-    A schema for a video link response.
+    A schema to respond with video link information
     """
 
-    version: str = Field(..., description="The API version number.")
-    status: int = Field(..., description="The HTTP status code of the response.")
-    links: List[str] = Field(None, description="A list of video links (URLs).")
-    source: Literal["manual"] = Field(
-        "manual", description="The source of the video link."
+    version: str = Field(..., description="API version")
+    status: int = Field(..., description="Response status code")
+    links: List[VideoLinkWithMetadata] = Field(
+        ..., description="List of video links with metadata"
     )
-    uploader: EmailStr = Field(
-        ..., description="The email of the user who uploaded the video."
-    )
+    source: Literal["manual"] = Field("manual", description="Source of the video links")
+    uploader: EmailStr = Field(..., description="Uploader's email address")
+    message: str = Field(..., description="Response message")
 
 
 class VideoLinkFileResponse(BaseModel):
@@ -32,21 +72,24 @@ class VideoLinkFileResponse(BaseModel):
     A schema for a video link response extracted by files.
     """
 
-    version: str = Field(..., description="The API version number.")
-    status: int = Field(..., description="The HTTP status code of the response.")
-    links: List[str] = Field(None, description="A list of video links (URLs).")
-    source: Literal["file"] = Field("file", description="The source of the video link.")
-    uploader: int = Field(..., description="The id of the user who uploaded the video.")
-    message: str = Field(..., description="Message to be shown to user")
+    version: str = Field(..., description="API version")
+    status: int = Field(..., description="Response status code")
+    links: List[VideoLinkWithMetadata] = Field(
+        ..., description="List of video links with metadata"
+    )
+    source: Literal["file"] = Field("file", description="Source of the video links")
+    uploader: EmailStr = Field(..., description="Uploader's email address")
+    message: str = Field(..., description="Response message")
 
 
 class LinkResponse(BaseModel):
-    id: int = Field(..., description="Unique identifier for the user.")
-    links: List[str] = Field(..., description="List of video URLs.")
-    source: str = Field(..., description="Source of the video links.")
-    uploader: str = Field(..., description="Uploader's email or identifier.")
-    version: str = Field(..., description="API version.")
-    message: Optional[str] = Field(None, description="Optional user message.")
-    uploaded_at: Optional[str] = Field(
-        None, description="Uploaded timestamp (ISO format)."
+    version: str = Field(..., description="API version")
+    status: int = Field(..., description="Response status code")
+    links: List[VideoLinkWithMetadata] = Field(
+        ..., description="List of video links with metadata"
     )
+    source: Literal["file", "manual", "mixed"] = Field(
+        "file", description="Source of the video links"
+    )
+    uploader: EmailStr = Field(..., description="Uploader's email address")
+    message: str = Field(..., description="Response message")

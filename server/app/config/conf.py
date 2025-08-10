@@ -18,3 +18,9 @@ appwrite_endpoint = os.getenv("APPWRITE_URL")
 appwrite_projectId = os.getenv("APPWRITE_PROJECT_ID")
 appwrite_apiKey = os.getenv("APPWRITE_APIKEY")
 appwrite_bucketId = os.getenv("APPWRITE_BUCKETID")
+
+
+### Setting up the Youtube API
+youtube_key = os.getenv("YOUTUBE_APIKEY")
+youtube_url = os.getenv("YOUTUBE_URL")
+youtube_embeded = os.getenv("YOUTUBE_EMBEDED")

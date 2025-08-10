@@ -1,1 +1,1 @@
-from server.app import config
+from app import app

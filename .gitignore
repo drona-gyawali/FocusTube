@@ -1,4 +1,30 @@
-prospects.md
 api.management
-api.http
+app.http
 README.md
+
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.pytest_cache
+#launch .json file
+.vscode
+# Virtual environments
+.venv
+.env
+
+#redis dump file
+dump.rdb
+.log
+
+#logs folder
+logs
+
+# Alembic SQLite or cache-related files (if present)
+migrations/__pycache__/
+migrations/env.pyc
+migrations/*.pyc
+

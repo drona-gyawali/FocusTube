@@ -11,4 +11,6 @@ from .video_link_schema import (
     VideoLinkFileResponse,
     VideoLinkRegister,
     VideoLinkResponse,
+    VideoLinkWithMetadata,
+    VideoMetadata,
 )
