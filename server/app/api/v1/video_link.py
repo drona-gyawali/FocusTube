@@ -1,15 +1,16 @@
 import traceback
 from typing import List
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.authentication.jwt.oauth2 import get_current_user
 from app.authentication.models import User
 from app.config import get_db, get_logger, youtube_embeded, youtube_key
-from app.repository import UserRepository, VideoLinkRepository
+from app.repository import VideoLinkRepository
 from app.schema import (
+    AddVideoToPlaylistResponse,
     LinkResponse,
+    PlaylistAddLinks,
+    PlaylistCreationResponse,
+    PlaylistRegister,
     VideoLinkFileResponse,
     VideoLinkRegister,
     VideoLinkResponse,
@@ -21,6 +22,8 @@ from app.utils import (
     extract_youtube_link_id,
     fetch_youtube_video_metadata,
 )
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = get_logger("[api/v1/video_link]")
 router = APIRouter()
@@ -451,3 +454,113 @@ async def delete_video_link(
         "status": status.HTTP_200_OK,
         "message": "Video link deleted successfully",
     }
+
+
+@router.post("/playlist", response_model=PlaylistCreationResponse)
+async def create_playlist(
+    data: PlaylistRegister,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Create a new playlist for the current user.
+
+    Args:
+        data (PlaylistRegister): The payload containing playlist name and description.
+        current_user (User, optional): The currently authenticated user, injected by dependency.
+        db (AsyncSession, optional): The asynchronous database session, injected by dependency.
+
+    Returns:
+        PlaylistCreationResponse: A response object containing the sucess details.
+
+    Raises:
+        HTTPException: If the user is unauthorized or if an internal error occurs.
+    """
+    repo = VideoLinkRepository(db)
+    user_email = current_user.email
+    if not user_email:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
+        )
+
+    try:
+        playlist_init = await repo.create_playlist(
+            current_user.id, data.name, data.description
+        )
+        logger.info("Playlist created Successfully")
+
+        return PlaylistCreationResponse(
+            version="v1",
+            status=status.HTTP_201_CREATED,
+            creator=user_email,
+            playlist_id=playlist_init.id,
+            playlist_name=playlist_init.name,
+            message="Playlist created Successfully",
+        )
+    except Exception as e:
+        logger.error(f"Playlist creation Error : {e}\n{traceback.format_exc()}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error",
+        )
+
+
+@router.post("/add-playlist", response_model=AddVideoToPlaylistResponse)
+async def add_playlist(
+    data: PlaylistAddLinks,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Add a video to a specific playlist for the current user.
+
+    Args:
+        data (PlaylistAddLinks): The payload containing video_id and playlist_id.
+        current_user (User, optional): The currently authenticated user, injected by dependency.
+        db (AsyncSession, optional): The asynchronous database session, injected by dependency.
+
+    Raises:
+        HTTPException: If the user is unauthorized, the video already exists in the playlist,
+                       or if an internal error occurs.
+
+    Returns:
+        AddVideoToPlaylistResponse: A response object containing the success details.
+    """
+    repo = VideoLinkRepository(db)
+    user_email = current_user.email
+
+    if not user_email:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized Access"
+        )
+
+    video_exist = await repo.check_unique_video(
+        current_user.id, data.video_id, data.playlist_id
+    )
+    if video_exist:
+        logger.warning("Video already exist in the user system")
+        raise HTTPException(status_code=400, detail="Video already exists in playlist")
+
+    try:
+        updated_video = await repo.add_video_to_playlist(
+            user_id=current_user.id,
+            video_id=data.video_id,
+            playlist_id=data.playlist_id,
+        )
+
+        logger.info("Video added to the playlist")
+
+        return AddVideoToPlaylistResponse(
+            version="v1",
+            status=status.HTTP_201_CREATED,
+            creator=user_email,
+            video_id=updated_video.id,
+            playlist_id=data.playlist_id,
+            message="Video successfully added to the playlist",
+        )
+
+    except Exception as e:
+        logger.error(f"Playlist creation Error : {e}\n{traceback.format_exc()}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Internal Server Error"
+        )

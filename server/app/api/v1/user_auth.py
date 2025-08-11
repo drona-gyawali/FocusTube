@@ -3,11 +3,6 @@ import shutil
 import traceback
 import uuid
 
-from appwrite.exception import AppwriteException
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
-from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.authentication.jwt.oauth2 import get_current_user
 from app.authentication.jwt.token import create_access_token
 from app.authentication.models import User
@@ -15,6 +10,10 @@ from app.config import get_db, get_logger
 from app.config.appwrite_client import AppwriteClient
 from app.repository import UserRepository
 from app.schema import ProfileResponse, Token, UploadProfile, UserRegister
+from appwrite.exception import AppwriteException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = get_logger("[api/v1/user_auth]")
 router = APIRouter()
@@ -119,6 +118,11 @@ async def upload_profile_image(
         preview_img = appwrite_client.getFilePreview(result)
 
         repo = UserRepository(db)
+        image_id = await repo.get_image_id(current_user.id)
+        # deleting before adding new image
+        if image_id:
+            await appwrite_client.delete_upload(image_id)
+
         updated_user = await repo.update_profile_image(
             current_user.id, str(preview_img)
         )

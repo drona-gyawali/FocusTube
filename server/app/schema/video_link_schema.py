@@ -93,3 +93,31 @@ class LinkResponse(BaseModel):
     )
     uploader: EmailStr = Field(..., description="Uploader's email address")
     message: str = Field(..., description="Response message")
+
+
+class PlaylistRegister(BaseModel):
+    name: str = Field(..., description="Name of the playlist")
+    description: str = Field(None, description="Description of the playlist")
+
+
+class PlaylistCreationResponse(BaseModel):
+    version: str = Field(..., description="API version")
+    status: int = Field(..., description="Response Status Code")
+    creator: str = Field(..., description="Owner of the playlist")
+    playlist_id: int = Field(..., description="Unique id of the playlist")
+    playlist_name: str = Field(..., description="Name of the playlist")
+    message: str = Field(..., description="Response Message")
+
+
+class PlaylistAddLinks(BaseModel):
+    video_id: int = Field(..., description="Unique Id of the Video")
+    playlist_id: int = Field(..., description="Unique Id of the Playlist")
+
+
+class AddVideoToPlaylistResponse(BaseModel):
+    version: str = Field(..., description="API version")
+    status: int = Field(..., description="Response status code")
+    creator: str = Field(..., description="Owner of the playlist")
+    video_id: int = Field(..., description="Unique Id of the Video")
+    playlist_id: int = Field(..., description="Unique Id of the Playlist")
+    message: str = Field(..., description="Response message")

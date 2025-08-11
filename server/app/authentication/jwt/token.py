@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta, timezone
 
 import jwt
-from fastapi import HTTPException, status
-from jwt.exceptions import InvalidTokenError
-
 from app.config import conf, get_logger
 from app.schema import TokenData
+from fastapi import HTTPException, status
+from jwt.exceptions import InvalidTokenError
 
 logger = get_logger("[/authentication/jwt]")
 

@@ -2,7 +2,6 @@ import re
 from typing import Optional
 
 import requests
-
 from app.config import get_logger
 from app.config.conf import youtube_url
 

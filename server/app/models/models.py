@@ -1,9 +1,9 @@
+import enum
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import relationship
-
 from app.config import Base
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import relationship
 
 
 class UploadedLinks(Base):
@@ -23,8 +23,37 @@ class UploadedLinks(Base):
     tags = Column(Text, nullable=True)
     source = Column(String, default="manual")
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    playlist_id = Column(Integer, ForeignKey("playlist.id"), nullable=True)
     uploaded_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
     uploader = relationship("User", back_populates="uploaded_links")
+    playlist = relationship("Playlist", back_populates="videos")
 
     def __repr__(self):
         return f"<UploadedLink(id={self.id}, video_id='{self.video_id}', user_id={self.user_id})>"
+
+
+class PlaylistVisibility(enum.Enum):
+    PUBLIC = "public"
+    PRIVATE = "private"
+
+
+class Playlist(Base):
+    __tablename__ = "playlist"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(Text, nullable=False)
+    description = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+
+    visibility = Column(Enum(PlaylistVisibility), default=PlaylistVisibility.PRIVATE)
+
+    videos = relationship("UploadedLinks", back_populates="playlist")
+    owner = relationship("User", back_populates="playlists")

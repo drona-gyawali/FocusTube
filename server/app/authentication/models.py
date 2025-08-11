@@ -1,9 +1,8 @@
 from datetime import datetime, timezone
 
+from app.config.database import Base
 from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from sqlalchemy.orm import relationship
-
-from app.config.database import Base
 
 
 class User(Base):
@@ -18,6 +17,7 @@ class User(Base):
     uploaded_links = relationship(
         "UploadedLinks", back_populates="uploader", cascade="all, delete-orphan"
     )
+    playlists = relationship("Playlist", back_populates="owner")
 
     def __repr__(self):
         return f"<User(id={self.id}, email='{self.email}')>"

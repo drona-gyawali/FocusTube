@@ -15,15 +15,17 @@ FocusTube provides a simple workflow: users paste a YouTube link, and the server
 
 - Minimal, distraction-free API for YouTube content
 - Paste a YouTube link and get only the main video—no reels, no shorts, no recommendations
-- FastAPI-based backend
-- Linting and formatting with `black` and `isort`
+- Blazing fast backend
+- JWT enabled User Authentication
+
 
 ## Getting Started
 
 ### Prerequisites
 
 - Python 3.8+
-- pip
+- Postgresql DB
+- uv pacakage manager
 
 ### Installation
 
@@ -43,6 +45,15 @@ FocusTube provides a simple workflow: users paste a YouTube link, and the server
   ```bash
   pip install -r requirements.txt
   ```
+
+4. **Database and its configuration**
+    
+  > please refer to the [Database Configuration](server/migrations/README) docs
+
+
+5. **API and its usuage**
+   
+  > please refer to the [API](server/app/api/v1/docs/API.md) API docs
 
 ### Running the Server
 

@@ -7,7 +7,11 @@ from .user_schema import (
     UserRegister,
 )
 from .video_link_schema import (
+    AddVideoToPlaylistResponse,
     LinkResponse,
+    PlaylistAddLinks,
+    PlaylistCreationResponse,
+    PlaylistRegister,
     VideoLinkFileResponse,
     VideoLinkRegister,
     VideoLinkResponse,
