@@ -7,15 +7,19 @@ from app.config import get_db, get_logger, youtube_embeded, youtube_key
 from app.repository import VideoLinkRepository
 from app.schema import (
     AddVideoToPlaylistResponse,
+    DefaultResponse,
     LinkResponse,
     PlaylistAddLinks,
     PlaylistCreationResponse,
     PlaylistRegister,
+    PlaylistVideos,
+    PlaylistWithVideosResponse,
     VideoLinkFileResponse,
     VideoLinkRegister,
     VideoLinkResponse,
     VideoLinkWithMetadata,
     VideoMetadata,
+    VisibilityRegister,
 )
 from app.utils import (
     extract_file_link,
@@ -561,6 +565,124 @@ async def add_playlist(
 
     except Exception as e:
         logger.error(f"Playlist creation Error : {e}\n{traceback.format_exc()}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Internal Server Error"
+        )
+
+
+@router.post("/playlist-visibility", response_model=DefaultResponse)
+async def change_visibility(
+    data: VisibilityRegister,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Change the visibility of a playlist for the current user.
+
+    Args:
+        data (VisibilityRegister): The data containing the playlist ID and the new visibility value.
+        current_user (User, optional): The currently authenticated user, injected by dependency.
+        db (AsyncSession, optional): The database session, injected by dependency.
+
+    Returns:
+        DefaultResponse: A response object indicating the result of the visibility change operation.
+
+    Raises:
+        HTTPException: If the user is not authorized or if an internal server error occurs.
+
+    """
+    repo = VideoLinkRepository(db)
+
+    user_email = current_user.email
+    if not user_email:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized Acess"
+        )
+
+    try:
+        playlist_visibilty = await repo.change_playlist_visibility(
+            current_user.id,
+            data.playlist_id,
+            data.visibility,
+        )
+
+        if playlist_visibilty.id:
+            logger.info(
+                f"Visibility change Successfully to {playlist_visibilty.visibility.value}"
+            )
+
+            return DefaultResponse(
+                version="v1",
+                status=status.HTTP_202_ACCEPTED,
+                uploader=user_email,
+                message=f"Visibility Change Successfully to {playlist_visibilty.visibility.value}",
+            )
+    except Exception as e:
+        logger.error(f" Visibility Update Failed  : {e}\n{traceback.format_exc()}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Internal Server Error"
+        )
+
+
+@router.get("/playlists/videos", response_model=PlaylistWithVideosResponse)
+async def get_all_user_playlist_videos(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+     Retrieve all playlists and their associated videos for the current user.
+
+    This endpoint fetches all playlists created by the authenticated user, along with the videos contained in each playlist.
+    Returns a structured response with playlist details and their videos.
+
+    Args:
+        current_user (User): The currently authenticated user, injected by dependency.
+        db (AsyncSession): The asynchronous database session, injected by dependency.
+
+    Returns:
+        PlaylistWithVideosResponse: A response object containing the API version, status code, creator's email,
+                                    list of playlists with their videos, and a message.
+
+    Raises:
+        HTTPException: If an error occurs during processing, returns a 400 Bad Request.
+
+    """
+    repo = VideoLinkRepository(db)
+    playlists = await repo.get_user_playlists_with_videos(current_user.id)
+    try:
+        playlist_data = []
+        for pl in playlists:
+            playlist_data.append(
+                PlaylistVideos(
+                    playlist_id=pl.id,
+                    playlist_name=pl.name,
+                    description=pl.description,
+                    visibility=pl.visibility.value,
+                    videos=[
+                        VideoMetadata(
+                            id=v.id,
+                            title=v.title,
+                            description=v.description,
+                            channel_title=v.channel_title,
+                            thumbnail_url=v.thumbnail_url,
+                            uploaded_at=v.uploaded_at.isoformat(),
+                            embedded_url=f"{youtube_embeded}/{v.video_id}",
+                        )
+                        for v in pl.videos
+                    ],
+                )
+            )
+
+        return PlaylistWithVideosResponse(
+            version="v1",
+            status=200,
+            creator=current_user.email,
+            playlists=playlist_data,
+            message="Fetched all playlists and their videos successfully",
+        )
+
+    except Exception as e:
+        logger.error(f" Something went wrong:  : {e}\n{traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Internal Server Error"
         )

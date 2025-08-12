@@ -48,12 +48,12 @@ FocusTube provides a simple workflow: users paste a YouTube link, and the server
 
 4. **Database and its configuration**
     
-  > please refer to the [Database Configuration](server/migrations/README) docs
+  > Please refer to the [Database Configuration](server/migrations/README.md) docs
 
 
-5. **API and its usuage**
+5. **API**
    
-  > please refer to the [API](server/app/api/v1/docs/API.md) API docs
+  > Please refer to the [API](server/app/api/v1/docs/API.md) docs
 
 ### Running the Server
 

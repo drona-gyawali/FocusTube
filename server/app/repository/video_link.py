@@ -2,10 +2,11 @@ from datetime import datetime, timezone
 from typing import List, Optional
 
 from app.config import get_logger
-from app.models import Playlist, UploadedLinks
+from app.models import Playlist, PlaylistVisibility, UploadedLinks
 from sqlalchemy import delete, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 logger = get_logger("[app/repository/video_link]")
 
@@ -203,4 +204,53 @@ class VideoLinkRepository:
 
         except Exception as e:
             logger.error(f"Unexpected error in check_unique_video: {e}")
+            raise
+
+    async def change_playlist_visibility(
+        self,
+        user_id: int,
+        playlist_id: int,
+        visibility: str,
+    ) -> Playlist:
+        """Change visibility of the playlist."""
+        now = datetime.utcnow().replace(tzinfo=None)
+        try:
+            playlist = await self.db.get(Playlist, playlist_id)
+
+            if not playlist:
+                raise ValueError("Playlist not found")
+
+            if playlist.user_id != user_id:
+                raise PermissionError("Unauthorized access")
+
+            try:
+                playlist.visibility = PlaylistVisibility(visibility)
+                playlist.updated_at = now
+            except ValueError:
+                raise ValueError("Invalid visibility value")
+
+            await self.db.commit()
+            await self.db.refresh(playlist)
+
+            return playlist
+
+        except SQLAlchemyError as e:
+            logger.error(f"DB Error (change_visibility): {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error (change_visibility): {e}")
+            raise
+
+    async def get_user_playlists_with_videos(self, user_id: int):
+        """Return all playlists with their videos for a given user."""
+        try:
+            query = (
+                select(Playlist)
+                .where(Playlist.user_id == user_id)
+                .options(selectinload(Playlist.videos))
+            )
+            result = await self.db.execute(query)
+            return result.scalars().all()
+        except Exception as e:
+            logger.error(f"DB Error (get_user_playlists_with_videos): {e}")
             raise

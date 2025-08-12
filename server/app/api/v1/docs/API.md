@@ -1,8 +1,8 @@
-# Video Link Management API Documentation
+# FocusTube (v1) API Documentation
 
 ## Overview
 
-The Video Link Management API is a RESTful service that allows users to manage YouTube video links with metadata extraction capabilities. Users can register, authenticate, manage their profiles, and store video links either manually or by uploading files.
+This is the FocusTube API RESTful service that allows users to manage YouTube video links with metadata extraction capabilities. Users can register, authenticate, manage their profiles, and store video links either manually or by uploading files.
 
 **Base URL:** `http://localhost:8000/backend/api/v1`
 
@@ -427,6 +427,81 @@ Adds a video to a specific playlist for the authenticated user.
   "metadata": { /* VideoMetadata object or null */ }
 }
 ```
+
+### Change Playlist Visibility
+
+Changes the visibility of a playlist for the authenticated user.
+
+**Endpoint:** `POST /playlist-visibility`
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request Body:**
+```json
+{
+  "playlist_id": 1,
+  "visibility": "public"
+}
+```
+
+**Response:**
+```json
+{
+  "version": "v1",
+  "status": 202,
+  "uploader": "test@example.com",
+  "message": "Visibility Change Successfully to public"
+}
+```
+
+**Status Codes:**
+- `202` - Visibility changed successfully
+- `400` - Bad request or internal server error
+- `401` - Unauthorized
+
+---
+
+### Get All Playlists with Videos
+
+Retrieves all playlists and their associated videos for the authenticated user.
+
+**Endpoint:** `GET /playlists/videos`
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response:**
+```json
+{
+  "version": "v1",
+  "status": 200,
+  "creator": "test@example.com",
+  "playlists": [
+    {
+      "playlist_id": 1,
+      "playlist_name": "My Favorite Videos",
+      "description": "A collection of my best videos",
+      "visibility": "public",
+      "videos": [
+        {
+          "id": 51,
+          "title": "Sample Video Title",
+          "description": "Video description...",
+          "channel_title": "Channel Name",
+          "thumbnail_url": "https://img.youtube.com/vi/VIDEO_ID/default.jpg",
+          "uploaded_at": "2024-01-15T10:30:00Z",
+          "embedded_url": "https://www.youtube.com/embed/VIDEO_ID"
+        }
+      ]
+    }
+  ],
+  "message": "Fetched all playlists and their videos successfully"
+}
+```
+
+**Status Codes:**
+- `200` - Success
+- `401` - Unauthorized
+- `400` - Internal server error
 
 ## Error Handling
 

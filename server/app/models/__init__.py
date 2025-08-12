@@ -1,1 +1,1 @@
-from .models import Playlist, UploadedLinks
+from .models import Playlist, PlaylistVisibility, UploadedLinks

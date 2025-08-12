@@ -3,6 +3,17 @@ from typing import List, Literal, Optional
 from pydantic import BaseModel, EmailStr, Field
 
 
+class DefaultResponse(BaseModel):
+    """
+    A Default Response to show
+    """
+
+    version: str = Field(..., description="API version")
+    status: int = Field(..., description="Response status code")
+    uploader: EmailStr = Field(..., description="Uploader's email address")
+    message: str = Field(..., description="Response message")
+
+
 class VideoLinkRegister(BaseModel):
     """
     A schema for a video link register
@@ -120,4 +131,31 @@ class AddVideoToPlaylistResponse(BaseModel):
     creator: str = Field(..., description="Owner of the playlist")
     video_id: int = Field(..., description="Unique Id of the Video")
     playlist_id: int = Field(..., description="Unique Id of the Playlist")
+    message: str = Field(..., description="Response message")
+
+
+class VisibilityRegister(BaseModel):
+    playlist_id: int = Field(..., description="Unique id of playlist")
+    visibility: str = Field(
+        ..., description="Permission to public or private of playlist"
+    )
+
+
+class PlaylistVideos(BaseModel):
+    playlist_id: int = Field(..., description="Unique ID of the playlist")
+    playlist_name: str = Field(..., description="Name of the playlist")
+    description: Optional[str] = Field(None, description="Description of the playlist")
+    visibility: str = Field(..., description="Playlist visibility")
+    videos: List[VideoMetadata] = Field(
+        ..., description="List of videos in the playlist"
+    )
+
+
+class PlaylistWithVideosResponse(BaseModel):
+    version: str = Field(..., description="API version")
+    status: int = Field(..., description="Response status code")
+    creator: EmailStr = Field(..., description="Owner of the playlist")
+    playlists: List[PlaylistVideos] = Field(
+        ..., description="List of playlists with their videos"
+    )
     message: str = Field(..., description="Response message")
