@@ -474,13 +474,13 @@ Retrieves all playlists and their associated videos for the authenticated user.
 {
   "version": "v1",
   "status": 200,
-  "creator": "test@example.com",
   "playlists": [
     {
       "playlist_id": 1,
       "playlist_name": "My Favorite Videos",
       "description": "A collection of my best videos",
       "visibility": "public",
+      "creator_email": "test@example.com",
       "videos": [
         {
           "id": 51,
@@ -502,6 +502,50 @@ Retrieves all playlists and their associated videos for the authenticated user.
 - `200` - Success
 - `401` - Unauthorized
 - `400` - Internal server error
+
+---
+
+### Get All Public Playlists with Videos
+
+Retrieves all playlists and their associated videos for the user.
+
+**Endpoint:** `GET /playlists/videos`
+
+**Response:**
+```json
+{
+  "version": "v1",
+  "status": 200,
+  "playlists": [
+    {
+      "playlist_id": 1,
+      "playlist_name": "My Favorite Videos",
+      "description": "A collection of my best videos",
+      "visibility": "public",
+      "creator_email": "test@example.com",
+
+      "videos": [
+        {
+          "id": 51,
+          "title": "Sample Video Title",
+          "description": "Video description...",
+          "channel_title": "Channel Name",
+          "thumbnail_url": "https://img.youtube.com/vi/VIDEO_ID/default.jpg",
+          "uploaded_at": "2024-01-15T10:30:00Z",
+          "embedded_url": "https://www.youtube.com/embed/VIDEO_ID"
+        }
+      ]
+    }
+  ],
+  "message": "Fetched all playlists and their videos successfully"
+}
+```
+
+**Status Codes:**
+- `200` - Success
+- `400` - Internal server error
+
+---
 
 ## Error Handling
 

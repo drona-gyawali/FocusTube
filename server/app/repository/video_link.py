@@ -6,7 +6,7 @@ from app.models import Playlist, PlaylistVisibility, UploadedLinks
 from sqlalchemy import delete, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import joinedload, selectinload
 
 logger = get_logger("[app/repository/video_link]")
 
@@ -248,6 +248,22 @@ class VideoLinkRepository:
                 select(Playlist)
                 .where(Playlist.user_id == user_id)
                 .options(selectinload(Playlist.videos))
+            )
+            result = await self.db.execute(query)
+            return result.scalars().all()
+        except Exception as e:
+            logger.error(f"DB Error (get_user_playlists_with_videos): {e}")
+            raise
+
+    async def get_all_public_playlist_with_videos(self, visibility="None"):
+        """
+        Get all public playlist.
+        """
+        try:
+            query = (
+                select(Playlist)
+                .where(Playlist.visibility == PlaylistVisibility(visibility))
+                .options(selectinload(Playlist.videos), joinedload(Playlist.owner))
             )
             result = await self.db.execute(query)
             return result.scalars().all()

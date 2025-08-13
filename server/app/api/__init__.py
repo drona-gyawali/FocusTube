@@ -5,4 +5,4 @@ api_router = APIRouter()
 
 
 for router, tag in v1_routers:
-    api_router.include_router(router, prefix="/backend/api/v1", tags=[tag])
+    api_router.include_router(router, prefix="/api/v1", tags=[tag])

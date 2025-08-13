@@ -13,11 +13,11 @@ ALGORITHM = conf.algorithm
 
 
 def create_access_token(user_id: int, expires_delta: timedelta | None = None):
-    to_encode = {"sub": str(user_id)}  # sub as string
+    to_encode = {"sub": str(user_id)}
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=30)
+        expire = datetime.now(timezone.utc) + timedelta(days=90)
     to_encode.update({"exp": int(expire.timestamp())})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt

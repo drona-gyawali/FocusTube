@@ -146,6 +146,7 @@ class PlaylistVideos(BaseModel):
     playlist_name: str = Field(..., description="Name of the playlist")
     description: Optional[str] = Field(None, description="Description of the playlist")
     visibility: str = Field(..., description="Playlist visibility")
+    creator_email: str = Field(..., description="Email of the creator")
     videos: List[VideoMetadata] = Field(
         ..., description="List of videos in the playlist"
     )
@@ -154,7 +155,6 @@ class PlaylistVideos(BaseModel):
 class PlaylistWithVideosResponse(BaseModel):
     version: str = Field(..., description="API version")
     status: int = Field(..., description="Response status code")
-    creator: EmailStr = Field(..., description="Owner of the playlist")
     playlists: List[PlaylistVideos] = Field(
         ..., description="List of playlists with their videos"
     )

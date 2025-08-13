@@ -658,6 +658,7 @@ async def get_all_user_playlist_videos(
                     playlist_name=pl.name,
                     description=pl.description,
                     visibility=pl.visibility.value,
+                    creator_email=getattr(pl.owner, "email", "unknown@example.com"),
                     videos=[
                         VideoMetadata(
                             id=v.id,
@@ -676,13 +677,83 @@ async def get_all_user_playlist_videos(
         return PlaylistWithVideosResponse(
             version="v1",
             status=200,
-            creator=current_user.email,
             playlists=playlist_data,
             message="Fetched all playlists and their videos successfully",
         )
 
     except Exception as e:
         logger.error(f" Something went wrong:  : {e}\n{traceback.format_exc()}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Internal Server Error"
+        )
+
+
+@router.get("/public-playlists/videos", response_model=PlaylistWithVideosResponse)
+async def get_public_playlist(db: AsyncSession = Depends(get_db)):
+    """
+    Retrieve all public playlists and their associated videos for the current user.
+
+    This endpoint fetches all playlists created by the authenticated user, along with the videos contained in each playlist.
+    Returns a structured response with playlist details and their videos.
+
+    Args:
+        db (AsyncSession): The asynchronous database session, injected by dependency.
+
+    Returns:
+        PlaylistWithVideosResponse: A response object containing the API version, status code, creator's email,
+                                    list of playlists with their videos, and a message.
+
+    Raises:
+        HTTPException: If an error occurs during processing, returns a 400 Bad Request.
+
+    """
+
+    repo = VideoLinkRepository(db)
+    try:
+        public_playlist_videos = await repo.get_all_public_playlist_with_videos(
+            visibility="public"
+        )
+
+        playlist_data = []
+
+        for pl in public_playlist_videos:
+            playlist_data.append(
+                PlaylistVideos(
+                    playlist_id=pl.id,
+                    playlist_name=pl.name,
+                    description=pl.description,
+                    visibility=pl.visibility.value,
+                    creator_email=getattr(pl.owner, "email", "unknown@example.com"),
+                    videos=[
+                        VideoMetadata(
+                            id=v.id,
+                            title=v.title,
+                            description=v.description,
+                            channel_title=v.channel_title,
+                            thumbnail_url=v.thumbnail_url,
+                            uploaded_at=v.uploaded_at.isoformat(),
+                            embedded_url=f"{youtube_embeded}/{v.video_id}",
+                        )
+                        for v in pl.videos
+                    ],
+                )
+            )
+
+        message = (
+            "No playlist is public yet"
+            if not playlist_data
+            else "Fetched all playlists successfully"
+        )
+
+        return PlaylistWithVideosResponse(
+            version="v1",
+            status=200,
+            playlists=playlist_data,
+            message=message,
+        )
+
+    except Exception as e:
+        logger.error(f"Something went wrong: {e}\n{traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Internal Server Error"
         )
