@@ -270,3 +270,50 @@ class VideoLinkRepository:
         except Exception as e:
             logger.error(f"DB Error (get_user_playlists_with_videos): {e}")
             raise
+
+    async def progress_tracker(
+        self,
+        id: int,
+        user_id: int,
+        last_watched_time: float,
+    ):
+        """
+        Get video progress related data from user
+        """
+        try:
+            video = await self.db.get(UploadedLinks, id)
+            if not video:
+                raise ValueError("Video not found")
+
+            if video.user_id != user_id:
+                raise PermissionError("Unauthorized access")
+
+            video.is_completed = last_watched_time >= video.duration_seconds
+
+            video.last_watched_time = last_watched_time
+
+            await self.db.commit()
+            await self.db.refresh(video)
+            return video
+
+        except SQLAlchemyError as e:
+            await self.db.rollback()
+            logger.error(f"DB Error: (add_video_to_playlist): {e}")
+            raise
+
+        except Exception as e:
+            await self.db.rollback()
+            logger.error(f"Unexpected error in add_video_to_playlist: {e}")
+            raise
+
+    async def get_progress_tracker(self, user_id: int, id: int):
+        try:
+            query = select(UploadedLinks).where(
+                UploadedLinks.id == id, UploadedLinks.user_id == user_id
+            )
+            result = await self.db.execute(query)
+            return result.scalars().first()
+
+        except Exception as e:
+            logger.error(f"DB Error (get_progress_tracker): {e}")
+            raise

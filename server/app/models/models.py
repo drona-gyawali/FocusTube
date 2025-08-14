@@ -2,7 +2,17 @@ import enum
 from datetime import datetime, timezone
 
 from app.config import Base
-from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.orm import relationship
 
 
@@ -22,10 +32,12 @@ class UploadedLinks(Base):
     comment_count = Column(Integer, nullable=True)
     tags = Column(Text, nullable=True)
     source = Column(String, default="manual")
+    last_watched_time = Column(Float, nullable=True)
+    duration_seconds = Column(Float, nullable=True)
+    is_completed = Column(Boolean, default=False)
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     playlist_id = Column(Integer, ForeignKey("playlist.id"), nullable=True)
     uploaded_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-
     uploader = relationship("User", back_populates="uploaded_links")
     playlist = relationship("Playlist", back_populates="videos")
 

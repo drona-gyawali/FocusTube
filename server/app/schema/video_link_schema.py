@@ -159,3 +159,20 @@ class PlaylistWithVideosResponse(BaseModel):
         ..., description="List of playlists with their videos"
     )
     message: str = Field(..., description="Response message")
+
+
+class ProgressTrackerRegister(BaseModel):
+    last_time_watched: float = Field(..., description="Last watch time of the video")
+
+
+class ProgressTrackerResponse(BaseModel):
+    version: str = Field(..., description="API version")
+    is_completed: bool = Field(
+        default=False, description="Marker to know videos status"
+    )
+    last_time_watched: float = Field(..., description="Last WatchTime of the video")
+    duration: float = Field(..., description="Total duration of the video")
+    completion_percentage: float = Field(
+        ..., description="Percentage by completion of the video"
+    )
+    message: str = Field(..., description="Response Message")

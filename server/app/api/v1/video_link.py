@@ -14,6 +14,8 @@ from app.schema import (
     PlaylistRegister,
     PlaylistVideos,
     PlaylistWithVideosResponse,
+    ProgressTrackerRegister,
+    ProgressTrackerResponse,
     VideoLinkFileResponse,
     VideoLinkRegister,
     VideoLinkResponse,
@@ -757,3 +759,122 @@ async def get_public_playlist(db: AsyncSession = Depends(get_db)):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Internal Server Error"
         )
+
+
+@router.post("/videos/{videos_id}/progress", response_model=ProgressTrackerResponse)
+async def progress_tracker(
+    data: ProgressTrackerRegister,
+    videos_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Track progress for a specific video for the current user.
+
+    Args:
+        data (ProgressTrackerRegister): The payload containing last watched time.
+        videos_id (int): The unique identifier of the video.
+        current_user (User, optional): The currently authenticated user, injected by dependency.
+        db (AsyncSession, optional): The asynchronous database session, injected by dependency.
+
+    Returns:
+        ProgressTrackerResponse: A response object containing progress details.
+
+    Raises:
+        HTTPException: If the user is unauthorized, progress not found, or an internal error occurs.
+    """
+    repo = VideoLinkRepository(db)
+    user_email = current_user.email
+
+    if not user_email:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized Acesss"
+        )
+
+    try:
+        progress = await repo.progress_tracker(
+            id=videos_id,
+            user_id=current_user.id,
+            last_watched_time=data.last_time_watched,
+        )
+
+        if not progress.id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Progress not found"
+            )
+
+        duration_seconds = max(progress.duration_seconds, 1)
+        completion_percentage = round(
+            (progress.last_watched_time / duration_seconds) * 100, 2
+        )
+
+        return ProgressTrackerResponse(
+            version="v1",
+            is_completed=progress.is_completed,
+            last_time_watched=progress.last_watched_time,
+            duration=progress.duration_seconds,
+            completion_percentage=completion_percentage,
+            message="Progress tracked set successfully",
+        )
+
+    except Exception as e:
+        logger.error(f"Something went wrong: {e}\n{traceback.format_exc()}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Requested video not Found"
+        )
+
+
+@router.get("/videos/{video_id}/progress", response_model=ProgressTrackerResponse)
+async def get_progress_tracker(
+    video_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Retrieve the progress tracking information for a specific video for the current user.
+
+    Args:
+        video_id (int): The unique identifier of the video.
+        current_user (User, optional): The currently authenticated user, injected by dependency.
+        db (AsyncSession, optional): The asynchronous database session, injected by dependency.
+
+    Returns:
+        ProgressTrackerResponse: A response object containing progress details.
+
+    Raises:
+        HTTPException: If the user is unauthorized, progress not found, or an internal error occurs.
+    """
+    repo = VideoLinkRepository(db)
+
+    if not current_user.email:
+        raise HTTPException(status_code=401, detail="Unauthorized Access")
+
+    try:
+        get_progress = await repo.get_progress_tracker(
+            user_id=current_user.id,
+            id=video_id,
+        )
+        if not get_progress:
+            raise HTTPException(status_code=404, detail="Progress not found")
+
+        if get_progress:
+            last_time = get_progress.last_watched_time or 0
+            duration = get_progress.duration_seconds or 1
+            completion_percentage = round((last_time / duration) * 100, 2)
+            is_completed = (
+                get_progress.is_completed
+                if get_progress.is_completed is not None
+                else False
+            )
+
+        return ProgressTrackerResponse(
+            version="v1",
+            is_completed=is_completed,
+            last_time_watched=last_time,
+            duration=duration,
+            completion_percentage=completion_percentage,
+            message="Progress tracked retrieved successfully",
+        )
+    except Exception as e:
+        logger.error(f"Something went wrong: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")

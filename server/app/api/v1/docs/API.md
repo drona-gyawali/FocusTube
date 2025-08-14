@@ -540,6 +540,76 @@ Retrieves all playlists and their associated videos for the user.
   "message": "Fetched all playlists and their videos successfully"
 }
 ```
+## Video Progress Tracking
+
+### Track Video Progress
+
+Tracks the user's progress for a specific video.
+
+**Endpoint:** `POST /videos/{videos_id}/progress`
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Path Parameters:**
+- `videos_id` (integer): The unique identifier of the video
+
+**Request Body:**
+```json
+{
+  "last_time_watched": 120
+}
+```
+
+**Response:**
+```json
+{
+  "version": "v1",
+  "is_completed": false,
+  "last_time_watched": 120,
+  "duration": 300,
+  "completion_percentage": 40.0,
+  "message": "Progress tracked set successfully"
+}
+```
+
+**Status Codes:**
+- `200` - Success
+- `400` - Requested video not found
+- `401` - Unauthorized
+- `404` - Progress not found
+
+---
+
+### Get Video Progress
+
+Retrieves the user's progress for a specific video.
+
+**Endpoint:** `GET /videos/{video_id}/progress`
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Path Parameters:**
+- `video_id` (integer): The unique identifier of the video
+
+**Response:**
+```json
+{
+  "version": "v1",
+  "is_completed": false,
+  "last_time_watched": 120,
+  "duration": 300,
+  "completion_percentage": 40.0,
+  "message": "Progress tracked retrieved successfully"
+}
+```
+
+**Status Codes:**
+- `200` - Success
+- `401` - Unauthorized
+- `404` - Progress not found
+- `500` - Internal server error
+
+--- 
 
 **Status Codes:**
 - `200` - Success
