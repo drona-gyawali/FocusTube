@@ -12,6 +12,7 @@ from .video_link_schema import (
     LinkResponse,
     PlaylistAddLinks,
     PlaylistCreationResponse,
+    PlaylistProgressTrackerResponse,
     PlaylistRegister,
     PlaylistVideos,
     PlaylistWithVideosResponse,

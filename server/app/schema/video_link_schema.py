@@ -176,3 +176,17 @@ class ProgressTrackerResponse(BaseModel):
         ..., description="Percentage by completion of the video"
     )
     message: str = Field(..., description="Response Message")
+
+
+class PlaylistProgressTrackerResponse(BaseModel):
+    version: str = Field(..., description="API version")
+    status: int = Field(..., description="Status code of the http response")
+    playlist_id: int = Field(..., desccription="Id of the playlist")
+    playlist_name: str = Field(..., desccription="Name of the playlist")
+    completion_percentage: float = Field(
+        ..., description="Percentage by completion of the video"
+    )
+    videos_completed: int = Field(
+        ..., desccription="Total count of the completed videos"
+    )
+    total_videos: int = Field(..., desccription="Total number of the videos")

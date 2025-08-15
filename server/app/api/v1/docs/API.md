@@ -603,6 +603,32 @@ Retrieves the user's progress for a specific video.
 }
 ```
 
+---
+
+### Get Video Progress
+
+Retrieves the user's progress for a specific playlist.
+
+**Endpoint:** `GET /playlists/{playlist_id}/progress`
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Path Parameters:**
+- `playlist_id` (integer): The unique identifier of the video
+
+**Response:**
+```json
+{
+  "version": "v1",
+  "status": 200,
+  "playlist_id": 2,
+  "playlist_name": "Tech study",
+  "completion_percentage": 50.0,
+  "videos_completed": 1,
+  "total_videos": 2
+}
+```
+
 **Status Codes:**
 - `200` - Success
 - `401` - Unauthorized

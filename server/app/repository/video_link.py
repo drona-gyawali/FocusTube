@@ -317,3 +317,26 @@ class VideoLinkRepository:
         except Exception as e:
             logger.error(f"DB Error (get_progress_tracker): {e}")
             raise
+
+    async def get_playlist_with_videos(
+        self,
+        user_id: int,
+        playlist_id: int,
+    ):
+        """
+        Return the playlist data by its id
+        """
+        try:
+            query = (
+                select(Playlist)
+                .where(
+                    Playlist.user_id == user_id,
+                    Playlist.id == playlist_id,
+                )
+                .options(selectinload(Playlist.videos))
+            )
+            result = await self.db.execute(query)
+            return result.scalars().first()
+        except Exception as e:
+            logger.error(f"DB Error (get_playlist_with_videos): {e}")
+            raise

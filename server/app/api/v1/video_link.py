@@ -11,6 +11,7 @@ from app.schema import (
     LinkResponse,
     PlaylistAddLinks,
     PlaylistCreationResponse,
+    PlaylistProgressTrackerResponse,
     PlaylistRegister,
     PlaylistVideos,
     PlaylistWithVideosResponse,
@@ -877,4 +878,60 @@ async def get_progress_tracker(
         )
     except Exception as e:
         logger.error(f"Something went wrong: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@router.get("/playlists/{playlist_id}/progress")
+async def get_playlist_progress(
+    playlist_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Retrieve the progress tracking information for a specific playlist for the current user.
+
+    Args:
+        playlist_id (int): The unique identifier of the playlist.
+        current_user (User, optional): The currently authenticated user, injected by dependency.
+        db (AsyncSession, optional): The asynchronous database session, injected by dependency.
+
+    Returns:
+        ProgressTrackerResponse: A response object containing progress details.
+
+    Raises:
+        HTTPException: If the user is unauthorized, Playlist not found, or an internal error occurs.
+    """
+
+    repo = VideoLinkRepository(db)
+
+    playlist = await repo.get_playlist_with_videos(
+        playlist_id=playlist_id, user_id=current_user.id
+    )
+
+    if not playlist:
+        raise HTTPException(status_code=404, detail="Playlist not found")
+
+    try:
+        total_videos = len(playlist.videos)
+        videos_completed = sum(
+            1 for v in getattr(playlist, "videos", []) if v.is_completed is True
+        )
+
+        completion_percentage = (
+            round((videos_completed / total_videos) * 100, 2)
+            if total_videos > 0
+            else 0.0
+        )
+
+        return PlaylistProgressTrackerResponse(
+            version="v1",
+            status=status.HTTP_200_OK,
+            playlist_id=playlist.id,
+            playlist_name=playlist.name,
+            videos_completed=videos_completed,
+            total_videos=total_videos,
+            completion_percentage=completion_percentage,
+        )
+    except Exception as e:
+        logger.error(f"Server error: {e}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
