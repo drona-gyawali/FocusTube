@@ -5,6 +5,7 @@ description = "FocusTube is an app designed to help you watch a YouTube video wi
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "aioredis>=2.0.1",
     "alembic>=1.16.4",
     "appwrite>=11.1.0",
     "asyncpg>=0.30.0",
@@ -20,6 +21,7 @@ dependencies = [
     "pypdf2>=3.0.1",
     "python-jose",
     "python-multipart>=0.0.20",
+    "redis[async]>=6.4.0",
     "sqlalchemy>=2.0.42",
     "sqlmodel>=0.0.24",
     "tracebook>=0.1.10",

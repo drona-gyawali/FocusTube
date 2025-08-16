@@ -3,7 +3,7 @@ from typing import List
 
 from app.authentication.jwt.oauth2 import get_current_user
 from app.authentication.models import User
-from app.config import get_db, get_logger, youtube_embeded, youtube_key
+from app.config import delete_cache, get_db, get_logger, youtube_embeded, youtube_key
 from app.repository import VideoLinkRepository
 from app.schema import (
     AddVideoToPlaylistResponse,
@@ -25,9 +25,11 @@ from app.schema import (
     VisibilityRegister,
 )
 from app.utils import (
+    cache_response,
     extract_file_link,
     extract_youtube_link_id,
     fetch_youtube_video_metadata,
+    user_cache_key,
 )
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -37,6 +39,9 @@ router = APIRouter()
 
 
 @router.get("/videos", response_model=LinkResponse)
+@cache_response(
+    lambda current_user, **kwargs: f"user_videos:{current_user.id}", ttl=300
+)
 async def get_all_links(
     current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
 ):
@@ -163,6 +168,7 @@ async def video_links(
     """
 
     try:
+        user_id = getattr(current_user, "id", None)
         uploader_email = getattr(current_user, "email", None)
         if not uploader_email:
             raise HTTPException(
@@ -231,9 +237,14 @@ async def video_links(
             current_user.id, link_payloads, source="manual"
         )
 
+        # deleting the cache after any updation
+        await delete_cache(f"user_videos:{user_id}")
+
         response_links = []
         for created_row in created:
             vid = getattr(created_row, "video_id", None)
+            uploaded_at_obj = getattr(created_row, "uploaded_at", None)
+            uploaded_at_str = uploaded_at_obj.isoformat() if uploaded_at_obj else None
             metadata_obj = None
             if vid:
                 metadata_obj = VideoMetadata(
@@ -244,7 +255,7 @@ async def video_links(
                     published_at=getattr(created_row, "published_at", None),
                     channel_title=getattr(created_row, "channel_title", None),
                     thumbnail_url=getattr(created_row, "thumbnail_url", None),
-                    uploaded_at=getattr(created_row, "uploaded_at", None),
+                    uploaded_at=uploaded_at_str,
                     embedded_url=(f"{youtube_embeded}/{vid}" if vid else None),
                 )
 
@@ -307,7 +318,7 @@ async def upload_links_files(
     repo = VideoLinkRepository(db)
 
     try:
-
+        user_id = current_user.id
         user_email = current_user.email
         for file in files:
             file_bytes = await file.read()
@@ -387,6 +398,8 @@ async def upload_links_files(
         created = await repo.create_video_link(
             current_user.id, link_payloads, source="file"
         )
+
+        await delete_cache(f"user_videos:{user_id}")
 
         response_links = []
         for created_row in created:
@@ -534,6 +547,7 @@ async def add_playlist(
         AddVideoToPlaylistResponse: A response object containing the success details.
     """
     repo = VideoLinkRepository(db)
+    user_id = current_user.id
     user_email = current_user.email
 
     if not user_email:
@@ -554,6 +568,7 @@ async def add_playlist(
             video_id=data.video_id,
             playlist_id=data.playlist_id,
         )
+        await delete_cache(f"user_playlist:{user_id}")
 
         logger.info("Video added to the playlist")
 
@@ -595,7 +610,7 @@ async def change_visibility(
 
     """
     repo = VideoLinkRepository(db)
-
+    user_id = current_user.id
     user_email = current_user.email
     if not user_email:
         raise HTTPException(
@@ -608,6 +623,8 @@ async def change_visibility(
             data.playlist_id,
             data.visibility,
         )
+
+        await delete_cache(f"user_playlist:{user_id}")
 
         if playlist_visibilty.id:
             logger.info(
@@ -628,6 +645,9 @@ async def change_visibility(
 
 
 @router.get("/playlists/videos", response_model=PlaylistWithVideosResponse)
+@cache_response(
+    lambda current_user, **kwargs: f"user_playlist:{current_user.id}", ttl=300
+)
 async def get_all_user_playlist_videos(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),

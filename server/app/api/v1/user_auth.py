@@ -10,6 +10,7 @@ from app.config import get_db, get_logger
 from app.config.appwrite_client import AppwriteClient
 from app.repository import UserRepository
 from app.schema import ProfileResponse, Token, UploadProfile, UserRegister
+from app.utils import cache_response, user_cache_key
 from appwrite.exception import AppwriteException
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -77,6 +78,7 @@ async def login(
 
 
 @router.get("/me", response_model=ProfileResponse)
+@cache_response(user_cache_key, ttl=300)
 async def me(
     current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
 ):

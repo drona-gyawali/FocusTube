@@ -1,4 +1,5 @@
 from .appwrite_client import AppwriteClient
+from .cache import close_redis, delete_cache, get_cache, init_redis, set_cache
 from .conf import (
     appwrite_apiKey,
     appwrite_bucketId,

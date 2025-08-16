@@ -3,6 +3,19 @@ revision = 2
 requires-python = ">=3.12"
 
 [[package]]
+name = "aioredis"
+version = "2.0.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "async-timeout" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/2e/cf/9eb144a0b05809ffc5d29045c4b51039000ea275bc1268d0351c9e7dfc06/aioredis-2.0.1.tar.gz", hash = "sha256:eaa51aaf993f2d71f54b70527c440437ba65340588afeb786cd87c55c89cd98e", size = 111047, upload-time = "2021-12-27T20:28:17.557Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9b/a9/0da089c3ae7a31cbcd2dcf0214f6f571e1295d292b6139e2bac68ec081d0/aioredis-2.0.1-py3-none-any.whl", hash = "sha256:9ac0d0b3b485d293b8ca1987e6de8658d7dafcca1cddfcd1d506cae8cdebfdd6", size = 71243, upload-time = "2021-12-27T20:28:16.36Z" },
+]
+
+[[package]]
 name = "alembic"
 version = "1.16.4"
 source = { registry = "https://pypi.org/simple" }
@@ -49,6 +62,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/9b/d9/0a393a63f9119cb5667de6ed7ae77aae530b2a8a100a561525eaa1b68fd5/appwrite-11.1.0.tar.gz", hash = "sha256:92efe2640380afde7e1d4ae1db514da48426213c46ad478401753e4a715e9ec0", size = 54257, upload-time = "2025-07-26T17:28:02.984Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/83/97/c8d7270dac3b510db542436e476e9dc7f4c2aab656a2d535d900ae5a53e4/appwrite-11.1.0-py3-none-any.whl", hash = "sha256:1dd28c6074eaaabd896f6e92255c6a74e0768bc00ddbadfdd465f5fd387d3733", size = 67548, upload-time = "2025-07-26T17:28:01.684Z" },
+]
+
+[[package]]
+name = "async-timeout"
+version = "5.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a5/ae/136395dfbfe00dfc94da3f3e136d0b13f394cba8f4841120e34226265780/async_timeout-5.0.1.tar.gz", hash = "sha256:d9321a7a3d5a6a5e187e824d2fa0793ce379a202935782d555d6e9d2735677d3", size = 9274, upload-time = "2024-11-06T16:41:39.6Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fe/ba/e2081de779ca30d473f21f5b30e0e737c438205440784c7dfc81efc2b029/async_timeout-5.0.1-py3-none-any.whl", hash = "sha256:39e3809566ff85354557ec2398b55e096c8364bacac9405a7a1fa429e77fe76c", size = 6233, upload-time = "2024-11-06T16:41:37.9Z" },
 ]
 
 [[package]]
@@ -376,6 +398,7 @@ name = "focustube"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "aioredis" },
     { name = "alembic" },
     { name = "appwrite" },
     { name = "asyncpg" },
@@ -391,6 +414,7 @@ dependencies = [
     { name = "pypdf2" },
     { name = "python-jose" },
     { name = "python-multipart" },
+    { name = "redis" },
     { name = "sqlalchemy" },
     { name = "sqlmodel" },
     { name = "tracebook" },
@@ -399,6 +423,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "aioredis", specifier = ">=2.0.1" },
     { name = "alembic", specifier = ">=1.16.4" },
     { name = "appwrite", specifier = ">=11.1.0" },
     { name = "asyncpg", specifier = ">=0.30.0" },
@@ -414,6 +439,7 @@ requires-dist = [
     { name = "pypdf2", specifier = ">=3.0.1" },
     { name = "python-jose" },
     { name = "python-multipart", specifier = ">=0.0.20" },
+    { name = "redis", extras = ["async"], specifier = ">=6.4.0" },
     { name = "sqlalchemy", specifier = ">=2.0.42" },
     { name = "sqlmodel", specifier = ">=0.0.24" },
     { name = "tracebook", specifier = ">=0.1.10" },
@@ -949,6 +975,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/5a/a9/104ec9234c8448c4379768221ea6df01260cd6c2ce13182d4eac531c8342/readme_renderer-44.0.tar.gz", hash = "sha256:8712034eabbfa6805cacf1402b4eeb2a73028f72d1166d6f5cb7f9c047c5d1e1", size = 32056, upload-time = "2024-07-08T15:00:57.805Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e1/67/921ec3024056483db83953ae8e48079ad62b92db7880013ca77632921dd0/readme_renderer-44.0-py3-none-any.whl", hash = "sha256:2fbca89b81a08526aadf1357a8c2ae889ec05fb03f5da67f9769c9a592166151", size = 13310, upload-time = "2024-07-08T15:00:56.577Z" },
+]
+
+[[package]]
+name = "redis"
+version = "6.4.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/0d/d6/e8b92798a5bd67d659d51a18170e91c16ac3b59738d91894651ee255ed49/redis-6.4.0.tar.gz", hash = "sha256:b01bc7282b8444e28ec36b261df5375183bb47a07eb9c603f284e89cbc5ef010", size = 4647399, upload-time = "2025-08-07T08:10:11.441Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e8/02/89e2ed7e85db6c93dfa9e8f691c5087df4e3551ab39081a4d7c6d1f90e05/redis-6.4.0-py3-none-any.whl", hash = "sha256:f0544fa9604264e9464cdf4814e7d4830f74b165d52f2a330a760a88dd248b7f", size = 279847, upload-time = "2025-08-07T08:10:09.84Z" },
 ]
 
 [[package]]
