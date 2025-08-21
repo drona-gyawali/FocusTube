@@ -1,10 +1,11 @@
 from contextlib import asynccontextmanager
 
-from app.api import api_router
-from app.config import close_redis, init_redis
 from fastapi import APIRouter, FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+
+from app.api import api_router
+from app.config import close_redis, init_redis
 
 
 async def lifespan(app: FastAPI):

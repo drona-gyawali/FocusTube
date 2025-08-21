@@ -1,11 +1,14 @@
+import asyncio
 import re
 from typing import Optional
 
 import requests
+from yt_dlp import YoutubeDL
+
 from app.config import get_logger
 from app.config.conf import youtube_url
 
-logger = get_logger("[utils/api_utils]")
+logger = get_logger(f"__name__")
 
 
 def iso8601_duration_to_seconds(duration: Optional[str]) -> Optional[int]:
@@ -94,3 +97,34 @@ def fetch_youtube_video_metadata(video_id: str, api_key: str) -> Optional[dict]:
     except Exception as exc:
         logger.error("Error fetching YouTube metadata for %s: %s", video_id, str(exc))
         return None
+
+
+async def download_video(url: str, output_path="downloads") -> bool:
+    """
+    Download a single YouTube video asynchronously.
+    Returns True if download succeeded, False otherwise.
+    """
+    if not url:
+        logger.error("No URL provided for downloading")
+        return False
+
+    ydl_opts = {
+        "outtmpl": f"{output_path}/%(title)s.%(ext)s",
+        "format": "bestvideo+bestaudio/best",
+        "merge_output_format": "mp4",
+        "noplaylist": True,
+    }
+
+    try:
+        # Run blocking yt-dlp code in a background thread
+        result_code = await asyncio.to_thread(
+            lambda: YoutubeDL(ydl_opts).download([url])
+        )
+        if result_code == 0:
+            return True
+        else:
+            logger.error("yt-dlp returned error code %s for URL: %s", result_code, url)
+            return False
+    except Exception as e:
+        logger.error("Error downloading yt video for %s: %s", url, str(e))
+        return False

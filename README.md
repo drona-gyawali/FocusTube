@@ -26,6 +26,7 @@ FocusTube provides a simple workflow: users paste a YouTube link, and the server
 - Python 3.8+
 - Postgresql DB
 - uv pacakage manager
+- ffmpeg `sudo apt install ffmpeg -y`
 
 ### Installation
 

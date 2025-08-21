@@ -5,6 +5,7 @@ from .conf import (
     appwrite_bucketId,
     appwrite_endpoint,
     appwrite_projectId,
+    video_url,
     youtube_embeded,
     youtube_key,
     youtube_url,

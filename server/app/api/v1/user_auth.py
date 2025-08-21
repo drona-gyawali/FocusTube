@@ -3,6 +3,11 @@ import shutil
 import traceback
 import uuid
 
+from appwrite.exception import AppwriteException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.authentication.jwt.oauth2 import get_current_user
 from app.authentication.jwt.token import create_access_token
 from app.authentication.models import User
@@ -11,12 +16,8 @@ from app.config.appwrite_client import AppwriteClient
 from app.repository import UserRepository
 from app.schema import ProfileResponse, Token, UploadProfile, UserRegister
 from app.utils import cache_response, user_cache_key
-from appwrite.exception import AppwriteException
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
-from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.ext.asyncio import AsyncSession
 
-logger = get_logger("[api/v1/user_auth]")
+logger = get_logger(f"{__name__}")
 router = APIRouter()
 
 

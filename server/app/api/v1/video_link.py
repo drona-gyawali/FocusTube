@@ -1,44 +1,34 @@
 import traceback
 from typing import List
 
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app import schema
 from app.authentication.jwt.oauth2 import get_current_user
 from app.authentication.models import User
-from app.config import delete_cache, get_db, get_logger, youtube_embeded, youtube_key
-from app.repository import VideoLinkRepository
-from app.schema import (
-    AddVideoToPlaylistResponse,
-    DefaultResponse,
-    LinkResponse,
-    PlaylistAddLinks,
-    PlaylistCreationResponse,
-    PlaylistProgressTrackerResponse,
-    PlaylistRegister,
-    PlaylistVideos,
-    PlaylistWithVideosResponse,
-    ProgressTrackerRegister,
-    ProgressTrackerResponse,
-    VideoLinkFileResponse,
-    VideoLinkRegister,
-    VideoLinkResponse,
-    VideoLinkWithMetadata,
-    VideoMetadata,
-    VisibilityRegister,
+from app.config import (
+    delete_cache,
+    get_db,
+    get_logger,
+    video_url,
+    youtube_embeded,
+    youtube_key,
 )
+from app.repository import VideoLinkRepository
 from app.utils import (
     cache_response,
+    download_video,
     extract_file_link,
     extract_youtube_link_id,
     fetch_youtube_video_metadata,
-    user_cache_key,
 )
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
-logger = get_logger("[api/v1/video_link]")
+logger = get_logger(f"{__name__}")
 router = APIRouter()
 
 
-@router.get("/videos", response_model=LinkResponse)
+@router.get("/videos", response_model=schema.LinkResponse)
 @cache_response(
     lambda current_user, **kwargs: f"user_videos:{current_user.id}", ttl=300
 )
@@ -82,7 +72,7 @@ async def get_all_links(
         result = await repo.get_all_links(user_id)
 
         if not result:
-            return LinkResponse(
+            return schema.LinkResponse(
                 version="v1",
                 status=status.HTTP_200_OK,
                 links=[],
@@ -99,7 +89,7 @@ async def get_all_links(
 
         response_links = []
         for link in result:
-            metadata_obj = VideoMetadata(
+            metadata_obj = schema.VideoMetadata(
                 etag=None,
                 id=link.id,
                 title=link.title,
@@ -117,10 +107,10 @@ async def get_all_links(
                 ),
             )
             response_links.append(
-                VideoLinkWithMetadata(url=link.url, metadata=metadata_obj)
+                schema.VideoLinkWithMetadata(url=link.url, metadata=metadata_obj)
             )
 
-        return LinkResponse(
+        return schema.LinkResponse(
             version="v1",
             status=status.HTTP_200_OK,
             links=response_links,
@@ -140,10 +130,12 @@ async def get_all_links(
 
 
 @router.post(
-    "/video-links", status_code=status.HTTP_200_OK, response_model=VideoLinkResponse
+    "/video-links",
+    status_code=status.HTTP_200_OK,
+    response_model=schema.VideoLinkResponse,
 )
 async def video_links(
-    data: VideoLinkRegister,
+    data: schema.VideoLinkRegister,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -186,7 +178,7 @@ async def video_links(
         new_links = list(set(unique_input_links) - set(existing_links))
 
         if not new_links:
-            return VideoLinkResponse(
+            return schema.VideoLinkResponse(
                 version="v1",
                 status=status.HTTP_200_OK,
                 links=[],
@@ -247,7 +239,7 @@ async def video_links(
             uploaded_at_str = uploaded_at_obj.isoformat() if uploaded_at_obj else None
             metadata_obj = None
             if vid:
-                metadata_obj = VideoMetadata(
+                metadata_obj = schema.VideoMetadata(
                     id=getattr(created_row, "id", None),
                     etag=getattr(created_row, "etag", None),
                     title=getattr(created_row, "title", None),
@@ -263,7 +255,7 @@ async def video_links(
                 {"url": getattr(created_row, "url"), "metadata": metadata_obj}
             )
 
-        return VideoLinkResponse(
+        return schema.VideoLinkResponse(
             version="v1",
             status=status.HTTP_200_OK,
             links=response_links,
@@ -282,7 +274,7 @@ async def video_links(
         )
 
 
-@router.post("/video-links/files", response_model=VideoLinkFileResponse)
+@router.post("/video-links/files", response_model=schema.VideoLinkFileResponse)
 async def upload_links_files(
     files: List[UploadFile] = File(...),
     db: AsyncSession = Depends(get_db),
@@ -348,7 +340,7 @@ async def upload_links_files(
         unique_links = list(set(prepare_unique_links) - set(existing_links))
 
         if not unique_links:
-            return VideoLinkFileResponse(
+            return schema.VideoLinkFileResponse(
                 version="v1",
                 status=status.HTTP_200_OK,
                 links=[],
@@ -406,7 +398,7 @@ async def upload_links_files(
             vid = getattr(created_row, "video_id", None)
             metadata_obj = None
             if vid:
-                metadata_obj = VideoMetadata(
+                metadata_obj = schema.VideoMetadata(
                     id=getattr(created_row, "id", None),
                     title=getattr(created_row, "title", None),
                     description=getattr(created_row, "description", None),
@@ -420,7 +412,7 @@ async def upload_links_files(
                 {"url": getattr(created_row, "url"), "metadata": metadata_obj}
             )
         logger.info("Link has been uploaded sucessfully")
-        return VideoLinkFileResponse(
+        return schema.VideoLinkFileResponse(
             version="v1",
             status=status.HTTP_200_OK,
             links=response_links,
@@ -476,9 +468,9 @@ async def delete_video_link(
     }
 
 
-@router.post("/playlist", response_model=PlaylistCreationResponse)
+@router.post("/playlist", response_model=schema.PlaylistCreationResponse)
 async def create_playlist(
-    data: PlaylistRegister,
+    data: schema.PlaylistRegister,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -509,7 +501,7 @@ async def create_playlist(
         )
         logger.info("Playlist created Successfully")
 
-        return PlaylistCreationResponse(
+        return schema.PlaylistCreationResponse(
             version="v1",
             status=status.HTTP_201_CREATED,
             creator=user_email,
@@ -525,9 +517,9 @@ async def create_playlist(
         )
 
 
-@router.post("/add-playlist", response_model=AddVideoToPlaylistResponse)
+@router.post("/add-playlist", response_model=schema.AddVideoToPlaylistResponse)
 async def add_playlist(
-    data: PlaylistAddLinks,
+    data: schema.PlaylistAddLinks,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -572,7 +564,7 @@ async def add_playlist(
 
         logger.info("Video added to the playlist")
 
-        return AddVideoToPlaylistResponse(
+        return schema.AddVideoToPlaylistResponse(
             version="v1",
             status=status.HTTP_201_CREATED,
             creator=user_email,
@@ -588,9 +580,9 @@ async def add_playlist(
         )
 
 
-@router.post("/playlist-visibility", response_model=DefaultResponse)
+@router.post("/playlist-visibility", response_model=schema.DefaultResponse)
 async def change_visibility(
-    data: VisibilityRegister,
+    data: schema.VisibilityRegister,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -631,7 +623,7 @@ async def change_visibility(
                 f"Visibility change Successfully to {playlist_visibilty.visibility.value}"
             )
 
-            return DefaultResponse(
+            return schema.DefaultResponse(
                 version="v1",
                 status=status.HTTP_202_ACCEPTED,
                 uploader=user_email,
@@ -644,7 +636,7 @@ async def change_visibility(
         )
 
 
-@router.get("/playlists/videos", response_model=PlaylistWithVideosResponse)
+@router.get("/playlists/videos", response_model=schema.PlaylistWithVideosResponse)
 @cache_response(
     lambda current_user, **kwargs: f"user_playlist:{current_user.id}", ttl=300
 )
@@ -676,14 +668,14 @@ async def get_all_user_playlist_videos(
         playlist_data = []
         for pl in playlists:
             playlist_data.append(
-                PlaylistVideos(
+                schema.PlaylistVideos(
                     playlist_id=pl.id,
                     playlist_name=pl.name,
                     description=pl.description,
                     visibility=pl.visibility.value,
                     creator_email=getattr(pl.owner, "email", "unknown@example.com"),
                     videos=[
-                        VideoMetadata(
+                        schema.VideoMetadata(
                             id=v.id,
                             title=v.title,
                             description=v.description,
@@ -697,7 +689,7 @@ async def get_all_user_playlist_videos(
                 )
             )
 
-        return PlaylistWithVideosResponse(
+        return schema.PlaylistWithVideosResponse(
             version="v1",
             status=200,
             playlists=playlist_data,
@@ -711,7 +703,9 @@ async def get_all_user_playlist_videos(
         )
 
 
-@router.get("/public-playlists/videos", response_model=PlaylistWithVideosResponse)
+@router.get(
+    "/public-playlists/videos", response_model=schema.PlaylistWithVideosResponse
+)
 async def get_public_playlist(db: AsyncSession = Depends(get_db)):
     """
     Retrieve all public playlists and their associated videos for the current user.
@@ -741,14 +735,14 @@ async def get_public_playlist(db: AsyncSession = Depends(get_db)):
 
         for pl in public_playlist_videos:
             playlist_data.append(
-                PlaylistVideos(
+                schema.PlaylistVideos(
                     playlist_id=pl.id,
                     playlist_name=pl.name,
                     description=pl.description,
                     visibility=pl.visibility.value,
                     creator_email=getattr(pl.owner, "email", "unknown@example.com"),
                     videos=[
-                        VideoMetadata(
+                        schema.VideoMetadata(
                             id=v.id,
                             title=v.title,
                             description=v.description,
@@ -768,7 +762,7 @@ async def get_public_playlist(db: AsyncSession = Depends(get_db)):
             else "Fetched all playlists successfully"
         )
 
-        return PlaylistWithVideosResponse(
+        return schema.PlaylistWithVideosResponse(
             version="v1",
             status=200,
             playlists=playlist_data,
@@ -782,9 +776,11 @@ async def get_public_playlist(db: AsyncSession = Depends(get_db)):
         )
 
 
-@router.post("/videos/{videos_id}/progress", response_model=ProgressTrackerResponse)
+@router.post(
+    "/videos/{videos_id}/progress", response_model=schema.ProgressTrackerResponse
+)
 async def progress_tracker(
-    data: ProgressTrackerRegister,
+    data: schema.ProgressTrackerRegister,
     videos_id: int,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -829,7 +825,7 @@ async def progress_tracker(
             (progress.last_watched_time / duration_seconds) * 100, 2
         )
 
-        return ProgressTrackerResponse(
+        return schema.ProgressTrackerResponse(
             version="v1",
             is_completed=progress.is_completed,
             last_time_watched=progress.last_watched_time,
@@ -845,7 +841,9 @@ async def progress_tracker(
         )
 
 
-@router.get("/videos/{video_id}/progress", response_model=ProgressTrackerResponse)
+@router.get(
+    "/videos/{video_id}/progress", response_model=schema.ProgressTrackerResponse
+)
 async def get_progress_tracker(
     video_id: int,
     current_user: User = Depends(get_current_user),
@@ -888,7 +886,7 @@ async def get_progress_tracker(
                 else False
             )
 
-        return ProgressTrackerResponse(
+        return schema.ProgressTrackerResponse(
             version="v1",
             is_completed=is_completed,
             last_time_watched=last_time,
@@ -943,7 +941,7 @@ async def get_playlist_progress(
             else 0.0
         )
 
-        return PlaylistProgressTrackerResponse(
+        return schema.PlaylistProgressTrackerResponse(
             version="v1",
             status=status.HTTP_200_OK,
             playlist_id=playlist.id,
@@ -955,3 +953,40 @@ async def get_playlist_progress(
     except Exception as e:
         logger.error(f"Server error: {e}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@router.get("/video/download")
+async def download_yt_videos(
+    video_id: str | None = Query(None),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Download the YT video
+
+    Args:
+        video_id (str): The unique identifier of the video.
+        current_user (User, optional): The currently authenticated user, injected by dependency.
+
+    Returns:
+        A response object containing progress details.
+
+    Raises:
+        HTTPException: If the user is unauthorized, video not found, or an internal error occurs.
+    """
+    user_email = current_user.email
+    if not video_id:
+        raise HTTPException(status_code=404, detail="No video was requested")
+
+    try:
+        url = video_url
+        clean_video_id = video_id.strip('"')
+        is_download = await download_video(f"{url}{clean_video_id}")
+
+        if is_download:
+            return {"message": "ok", "downloaded_by": user_email}
+        else:
+            return {"message": "bad", "requested_by": user_email}
+
+    except Exception as e:
+        logger.error(f"Downloading error occurred: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=505, detail="Internal server error")

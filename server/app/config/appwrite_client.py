@@ -1,12 +1,5 @@
 import traceback
 
-from app.config.conf import (
-    appwrite_apiKey,
-    appwrite_bucketId,
-    appwrite_endpoint,
-    appwrite_projectId,
-)
-from app.config.logger import get_logger
 from appwrite.client import Client
 from appwrite.exception import AppwriteException
 from appwrite.id import ID
@@ -15,7 +8,15 @@ from appwrite.permission import Permission
 from appwrite.role import Role
 from appwrite.services.storage import Storage
 
-logger = get_logger("[app/config/appwrite_client]")
+from app.config.conf import (
+    appwrite_apiKey,
+    appwrite_bucketId,
+    appwrite_endpoint,
+    appwrite_projectId,
+)
+from app.config.logger import get_logger
+
+logger = get_logger(f"{__name__}")
 
 
 class AppwriteClient:

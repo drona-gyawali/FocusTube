@@ -1,14 +1,15 @@
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from app.config import get_logger
-from app.models import Playlist, PlaylistVisibility, UploadedLinks
 from sqlalchemy import delete, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
-logger = get_logger("[app/repository/video_link]")
+from app.config import get_logger
+from app.models import Playlist, PlaylistVisibility, UploadedLinks
+
+logger = get_logger(f"{__name__}")
 
 
 class VideoLinkRepository:

@@ -26,6 +26,7 @@ dependencies = [
     "sqlmodel>=0.0.24",
     "tracebook>=0.1.10",
     "uvicorn>=0.35.0",
+    "yt-dlp>=2025.8.20",
 ]
 
 

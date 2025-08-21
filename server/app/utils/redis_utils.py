@@ -1,10 +1,11 @@
 import json
 from functools import wraps
 
-from app.authentication.models import User
-from app.config import get_cache, set_cache
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.authentication.models import User
+from app.config import get_cache, set_cache
 
 
 def cache_response(key_func, ttl=300):

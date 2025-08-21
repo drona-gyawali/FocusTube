@@ -2,10 +2,6 @@ import traceback
 from datetime import datetime
 from typing import List
 
-from app.authentication.models import User
-from app.config import get_logger
-from app.models.models import UploadedLinks
-from app.utils import helper
 from passlib.context import CryptContext
 from pydantic import EmailStr
 from sqlalchemy.exc import SQLAlchemyError
@@ -13,9 +9,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
+from app.authentication.models import User
+from app.config import get_logger
+from app.models.models import UploadedLinks
+from app.utils import file_utils
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-logger = get_logger("[app/repository/user]")
+logger = get_logger(f"{__name__}")
 
 
 class UserRepository:
@@ -45,7 +46,7 @@ class UserRepository:
             if not image_url:
                 return None
 
-            return helper.extract_file_id(image_url)
+            return file_utils.extract_file_id(image_url)
 
         except Exception as e:
             logger.error(f"DB Error : {e.message}\n{traceback.format_exc()}")

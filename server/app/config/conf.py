@@ -24,6 +24,7 @@ appwrite_bucketId = os.getenv("APPWRITE_BUCKETID")
 youtube_key = os.getenv("YOUTUBE_APIKEY")
 youtube_url = os.getenv("YOUTUBE_URL")
 youtube_embeded = os.getenv("YOUTUBE_EMBEDED")
+video_url = os.getenv("VIDEO_URL")
 
 ### Setting up the redis configuration
 redis_host = os.getenv("REDIS_HOST", "localhost")

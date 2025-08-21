@@ -2,11 +2,12 @@ import asyncio
 from logging.config import fileConfig
 
 from alembic import context
+from sqlalchemy import pool
+from sqlalchemy.ext.asyncio import create_async_engine
+
 from app.authentication.models import User
 from app.config import database
 from app.models import models
-from sqlalchemy import pool
-from sqlalchemy.ext.asyncio import create_async_engine
 
 config = context.config
 

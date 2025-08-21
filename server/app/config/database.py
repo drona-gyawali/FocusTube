@@ -1,11 +1,12 @@
 import os
 from typing import Annotated, AsyncGenerator
 
-from app.config import conf
 from dotenv import load_dotenv
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
+
+from app.config import conf
 
 load_dotenv()
 

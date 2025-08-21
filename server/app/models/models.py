@@ -1,7 +1,6 @@
 import enum
 from datetime import datetime, timezone
 
-from app.config import Base
 from sqlalchemy import (
     Boolean,
     Column,
@@ -14,6 +13,9 @@ from sqlalchemy import (
     Text,
 )
 from sqlalchemy.orm import relationship
+
+from app.config import Base
+from app.models.constants import PlaylistVisibility
 
 
 class UploadedLinks(Base):
@@ -43,11 +45,6 @@ class UploadedLinks(Base):
 
     def __repr__(self):
         return f"<UploadedLink(id={self.id}, video_id='{self.video_id}', user_id={self.user_id})>"
-
-
-class PlaylistVisibility(enum.Enum):
-    PUBLIC = "public"
-    PRIVATE = "private"
 
 
 class Playlist(Base):

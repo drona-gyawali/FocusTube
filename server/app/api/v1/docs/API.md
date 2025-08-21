@@ -637,11 +637,33 @@ Retrieves the user's progress for a specific playlist.
 
 --- 
 
+### Download Video
+
+Download the video by video_id
+
+**Endpoint:** `GET /video/download/?video_id=`
+
+**Headers:** `Authorization: Bearer <token>`
+
+**url Parameters:**
+- `video_id` (integer): The unique identifier of the video
+
+**Response:**
+```json
+{
+  "message": "ok",
+  "download_by": "testuser@example.com
+}
+```
+
 **Status Codes:**
 - `200` - Success
-- `400` - Internal server error
+- `401` - Unauthorized
+- `404` - video not found
+- `500` - Internal server error
 
 ---
+
 
 ## Error Handling
 
